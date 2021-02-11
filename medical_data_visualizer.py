@@ -23,7 +23,7 @@ def draw_cat_plot():
     df_cat = pd.melt(
         df,
         id_vars=["cardio"],
-        value_vars=["cholesterol", "gluc", "smoke", "alco", "active", "Overweight"],
+        value_vars=["cholesterol", "gluc", "smoke", "alco", "active", "overweight"],
     )
 
     # Group and reformat the data to split it by 'cardio'. Show the counts of each feature. You will have to rename one of the columns for the catplot to work correctly.
@@ -44,18 +44,27 @@ def draw_cat_plot():
 # Draw Heat Map
 def draw_heat_map():
     # Clean the data
-    df_heat = None
+    df_heat = df.drop(
+        df[
+            (df.ap_lo > df.ap_hi)
+            | (df.height < df["height"].quantile(0.025))
+            | (df.height > df["height"].quantile(0.975))
+            | (df.weight < df["weight"].quantile(0.025))
+            | (df.weight > df["weight"].quantile(0.975))
+        ].index
+    )
 
     # Calculate the correlation matrix
-    corr = None
+    corr = df_heat.corr().round(1)
 
     # Generate a mask for the upper triangle
-    mask = None
+    mask = np.triu(np.ones(corr.shape)).astype(np.bool)
 
     # Set up the matplotlib figure
-    fig, ax = None
+    fig, ax = plt.subplots()
 
     # Draw the heatmap with 'sns.heatmap()'
+    ax = sns.heatmap(corr, mask=mask, annot=True, fmt=".1f")
 
     # Do not modify the next two lines
     fig.savefig("heatmap.png")
